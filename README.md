@@ -46,7 +46,7 @@ the panel can never read or write files outside of `/config`.
 
 1. In HACS, go to **Integrations → ⋮ → Custom repositories**.
 2. Add this repository's URL with category **Integration**.
-3. Install "YAML Config Editor" and restart Home Assistant.
+3. Install "WP YAML Config Editor" and restart Home Assistant.
 
 ### Manual
 
@@ -57,7 +57,7 @@ the panel can never read or write files outside of `/config`.
 ### Enable it
 
 After restarting, go to **Settings → Devices & Services → Add
-Integration**, search for **YAML Config Editor**, and add it. A
+Integration**, search for **WP YAML Config Editor**, and add it. A
 "YAML Editor" entry will appear in your sidebar.
 
 ## Releasing / updates

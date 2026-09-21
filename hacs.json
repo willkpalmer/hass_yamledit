@@ -1,5 +1,5 @@
 {
-  "name": "YAML Config Editor",
+  "name": "WP YAML Config Editor",
   "render_readme": true,
   "homeassistant": "2024.8.0",
   "content_in_root": false

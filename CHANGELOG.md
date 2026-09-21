@@ -6,6 +6,15 @@ versioning scheme (`YYYY.MM.MICRO`, e.g. `2026.9.0`) and match the
 `version` field in `custom_components/yaml_editor/manifest.json`.
 Releases before that (`0.1.0`-`0.3.0`) used Semantic Versioning.
 
+## 2026.9.3
+
+- Renamed the integration's display name to "WP YAML Config Editor"
+  (prefixed with "WP") so it's how the integration appears in the
+  HACS directory and on the Settings -> Devices & Services
+  integrations page. The domain (`yaml_editor`) and the sidebar panel
+  title ("YAML Editor") are unchanged, so existing installs and
+  config entries are unaffected.
+
 ## 2026.9.2
 
 - Added a bundled brand icon (`custom_components/yaml_editor/brand/`)

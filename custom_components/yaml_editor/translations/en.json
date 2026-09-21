@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "title": "Set up YAML Config Editor",
+        "title": "Set up WP YAML Config Editor",
         "description": "This adds a \"YAML Editor\" panel to your sidebar for browsing and editing files under /config directly from the Home Assistant web UI and mobile app. Only administrators can access it."
       }
     },
     "abort": {
-      "single_instance_allowed": "YAML Config Editor is already set up."
+      "single_instance_allowed": "WP YAML Config Editor is already set up."
     }
   }
 }
