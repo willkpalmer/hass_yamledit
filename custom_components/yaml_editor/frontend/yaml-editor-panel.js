@@ -132,12 +132,15 @@ const STYLE = `
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   width: 100%;
   overflow: hidden;
   font-family: var(--paper-font-body1_-_font-family, Roboto, "Noto Sans", sans-serif);
   color: var(--primary-text-color, #212121);
   background: var(--primary-background-color, #fafafa);
   box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 * { box-sizing: border-box; }
 
@@ -323,15 +326,17 @@ const STYLE = `
 }
 .ye-gutter {
   flex: 0 0 auto;
-  width: 44px;
+  width: 52px;
   overflow: hidden;
   background: var(--card-background-color, #fff);
   color: var(--secondary-text-color, #9e9e9e);
   text-align: right;
-  padding: 8px 6px 8px 0;
-  font: 13px/1.5 "Roboto Mono", "Courier New", monospace;
+  padding: 8px 8px 8px 0;
+  font: 16px/1.5 "Roboto Mono", "Courier New", monospace;
   border-right: 1px solid var(--divider-color, #eee);
   white-space: pre;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 .ye-code-wrap { flex: 1 1 auto; position: relative; overflow: hidden; }
 .ye-highlight, .ye-input {
@@ -339,10 +344,12 @@ const STYLE = `
   inset: 0;
   margin: 0;
   padding: 8px 12px;
-  font: 13px/1.5 "Roboto Mono", "Courier New", monospace;
+  font: 16px/1.5 "Roboto Mono", "Courier New", monospace;
   white-space: pre;
   tab-size: 2;
   overflow: auto;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 .ye-highlight {
   color: var(--primary-text-color, #212121);
@@ -357,6 +364,8 @@ const STYLE = `
   resize: none;
   outline: none;
   z-index: 1;
+  -webkit-appearance: none;
+  appearance: none;
 }
 .ye-input::selection { background: rgba(3,169,244,0.35); }
 
@@ -588,6 +597,9 @@ class YamlEditorPanel extends HTMLElement {
     this._contextTarget = null;
 
     this._onWindowBeforeUnload = this._onWindowBeforeUnload.bind(this);
+    this._onDocumentClickCapture = this._onDocumentClickCapture.bind(this);
+    this._onPopState = this._onPopState.bind(this);
+    this._lastKnownHref = null;
   }
 
   _loadYamlOnlyPref() {
@@ -635,11 +647,19 @@ class YamlEditorPanel extends HTMLElement {
 
   connectedCallback() {
     if (this._hass && !this._built) this._build();
+    this._lastKnownHref = window.location.href;
     window.addEventListener("beforeunload", this._onWindowBeforeUnload);
+    // Catch in-app navigation (sidebar links, breadcrumbs, etc.) - a
+    // real browser unload never happens when switching HA panels, so
+    // beforeunload alone can't guard against losing unsaved edits.
+    document.addEventListener("click", this._onDocumentClickCapture, true);
+    window.addEventListener("popstate", this._onPopState);
   }
 
   disconnectedCallback() {
     window.removeEventListener("beforeunload", this._onWindowBeforeUnload);
+    document.removeEventListener("click", this._onDocumentClickCapture, true);
+    window.removeEventListener("popstate", this._onPopState);
   }
 
   _onWindowBeforeUnload(evt) {
@@ -647,6 +667,57 @@ class YamlEditorPanel extends HTMLElement {
       evt.preventDefault();
       evt.returnValue = "";
     }
+  }
+
+  _onDocumentClickCapture(e) {
+    if (!this._anyDirty()) return;
+    const path = e.composedPath();
+    if (path.includes(this)) return; // click was inside our own panel
+    const link = path.find((el) => el instanceof HTMLElement && el.tagName === "A" && el.hasAttribute("href"));
+    if (!link) return; // not a navigation link - leave things like the
+    // search/notification buttons in HA's own chrome alone.
+    const href = link.getAttribute("href");
+    if (!href || href.startsWith("#")) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    this._confirmLeave(() => {
+      document.removeEventListener("click", this._onDocumentClickCapture, true);
+      link.click();
+      document.addEventListener("click", this._onDocumentClickCapture, true);
+    });
+  }
+
+  _onPopState() {
+    const targetHref = window.location.href;
+    if (!this._anyDirty()) {
+      this._lastKnownHref = targetHref;
+      return;
+    }
+    // The URL/history entry already changed by the time we see this
+    // event - push our own URL back on top to neutralize it, then ask.
+    history.pushState(null, "", this._lastKnownHref);
+    this._confirmLeave(() => {
+      window.location.href = targetHref;
+    });
+  }
+
+  _confirmLeave(onConfirm) {
+    const dirtyCount = Array.from(this._tabs.values()).filter((t) => t.dirty).length;
+    this._openDialog(
+      `<h3>Leave without saving?</h3>
+       <p>You have unsaved changes in ${dirtyCount} file${dirtyCount === 1 ? "" : "s"}. They will be lost if you leave this page.</p>
+       <div class="actions">
+         <button data-dlg="cancel">Stay</button>
+         <button class="danger" data-dlg="ok">Leave</button>
+       </div>`
+    );
+    this._els.dialog.querySelector('[data-dlg="ok"]').addEventListener("click", () => {
+      this._closeDialog();
+      onConfirm();
+    });
+    this._els.dialog.querySelector('[data-dlg="cancel"]').addEventListener("click", () => this._closeDialog());
   }
 
   _anyDirty() {
@@ -1431,7 +1502,7 @@ class YamlEditorPanel extends HTMLElement {
     textarea.setSelectionRange(idx, idx + needle.length);
     const before = text.slice(0, idx);
     const lineNum = before.split("\n").length - 1;
-    const lineHeight = 19.5;
+    const lineHeight = 24; // 16px font * 1.5 line-height, keep in sync with .ye-input CSS
     textarea.scrollTop = Math.max(0, lineNum * lineHeight - textarea.clientHeight / 2);
     textarea.dispatchEvent(new Event("scroll"));
   }
