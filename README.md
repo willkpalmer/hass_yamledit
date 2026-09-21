@@ -68,9 +68,12 @@ HACS and Home Assistant discover new versions from this repository's
 release:
 
 1. Bump `version` in `manifest.json` (and add an entry to
-   `CHANGELOG.md`).
-2. Tag the commit `vX.Y.Z` (matching the new manifest version exactly)
-   and push the tag: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+   `CHANGELOG.md`). Versions follow Home Assistant's own calendar
+   versioning scheme, `YYYY.MM.MICRO` (e.g. `2026.9.0`), incrementing
+   `MICRO` for additional releases within the same month.
+2. Tag the commit `vYYYY.MM.MICRO` (matching the new manifest version
+   exactly) and push the tag:
+   `git tag vYYYY.MM.MICRO && git push origin vYYYY.MM.MICRO`.
 3. The `Release` GitHub Actions workflow verifies the tag matches the
    manifest version and publishes a GitHub Release automatically.
    HACS/Home Assistant will then offer it as an update.

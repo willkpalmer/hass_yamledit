@@ -1,8 +1,15 @@
 # Changelog
 
-All notable changes to this project are documented here. Versions
-follow [Semantic Versioning](https://semver.org/) and match the
+All notable changes to this project are documented here. Starting
+with `2026.9.0`, versions follow Home Assistant's own calendar
+versioning scheme (`YYYY.MM.MICRO`, e.g. `2026.9.0`) and match the
 `version` field in `custom_components/yaml_editor/manifest.json`.
+Releases before that (`0.1.0`-`0.3.0`) used Semantic Versioning.
+
+## 2026.9.0
+
+- Switched version numbering from Semantic Versioning to Home
+  Assistant's calendar versioning scheme (`YYYY.MM.MICRO`).
 
 ## 0.3.0
 
