@@ -6,6 +6,15 @@ versioning scheme (`YYYY.MM.MICRO`, e.g. `2026.9.0`) and match the
 `version` field in `custom_components/yaml_editor/manifest.json`.
 Releases before that (`0.1.0`-`0.3.0`) used Semantic Versioning.
 
+## 2026.9.2
+
+- Added a bundled brand icon (`custom_components/yaml_editor/brand/`)
+  so the integration shows a real icon instead of a placeholder in
+  both the HACS directory and the Settings -> Devices & Services
+  integrations page. Requires Home Assistant 2026.3.0+ (older
+  versions still work, just without the icon, since there is no
+  matching entry in the legacy `home-assistant/brands` repository).
+
 ## 2026.9.1
 
 - Fixed a remaining cause of the edit/selection highlight and cursor
