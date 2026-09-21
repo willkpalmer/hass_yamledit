@@ -2,9 +2,9 @@ name: Release
 
 # Publishing a GitHub Release is what lets HACS / Home Assistant see
 # and offer each version as an update. Cut a release by bumping
-# custom_components/yaml_editor/manifest.json's "version" (Home
-# Assistant's calendar versioning: YYYY.MM.MICRO) and pushing a
-# matching "vYYYY.MM.MICRO" tag - this workflow does the rest.
+# custom_components/yaml_editor/manifest.json's "version" (Semantic
+# Versioning: MAJOR.MINOR.PATCH) and pushing a matching
+# "vMAJOR.MINOR.PATCH" tag - this workflow does the rest.
 
 on:
   push:

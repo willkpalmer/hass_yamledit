@@ -1,10 +1,20 @@
 # Changelog
 
-All notable changes to this project are documented here. Starting
-with `2026.9.0`, versions follow Home Assistant's own calendar
-versioning scheme (`YYYY.MM.MICRO`, e.g. `2026.9.0`) and match the
+All notable changes to this project are documented here. Versions
+follow Semantic Versioning (`MAJOR.MINOR.PATCH`) and match the
 `version` field in `custom_components/yaml_editor/manifest.json`.
-Releases before that (`0.1.0`-`0.3.0`) used Semantic Versioning.
+Releases `2026.9.0`-`2026.9.4` briefly used Home Assistant's calendar
+versioning scheme (`YYYY.MM.MICRO`) instead; `0.3.1` reverts to
+Semantic Versioning, picking up where `0.3.0` left off.
+
+## 0.3.1
+
+- Reverted the `version` field back to Semantic Versioning after a
+  brief switch to Home Assistant's calendar versioning scheme.
+  Includes everything from the unreleased `2026.9.1`-`2026.9.4` line:
+  the highlight/cursor alignment fix (and the cache-busting bump that
+  actually shipped it), the bundled brand icon, and the "WP" display
+  name prefix.
 
 ## 2026.9.4
 
