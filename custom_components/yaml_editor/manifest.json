@@ -3,10 +3,10 @@
   "name": "YAML Config Editor",
   "codeowners": ["@willkpalmer"],
   "config_flow": true,
-  "documentation": "https://github.com/willkpalmer/hass_app_yamledit",
-  "issue_tracker": "https://github.com/willkpalmer/hass_app_yamledit/issues",
+  "documentation": "https://github.com/willkpalmer/hass_yamledit",
+  "issue_tracker": "https://github.com/willkpalmer/hass_yamledit/issues",
   "iot_class": "calculated",
   "requirements": [],
   "single_config_entry": true,
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

@@ -1,0 +1,40 @@
+name: Release
+
+# Publishing a GitHub Release is what lets HACS / Home Assistant see
+# and offer each version as an update. Cut a release by bumping
+# custom_components/yaml_editor/manifest.json's "version" and pushing
+# a matching "vX.Y.Z" tag - this workflow does the rest.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify manifest version matches tag
+        run: |
+          set -euo pipefail
+          tag_version="${GITHUB_REF_NAME#v}"
+          manifest_version=$(jq -r .version custom_components/yaml_editor/manifest.json)
+          if [ "$tag_version" != "$manifest_version" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match manifest.json version ${manifest_version}"
+            exit 1
+          fi
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes

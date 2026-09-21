@@ -60,6 +60,24 @@ After restarting, go to **Settings → Devices & Services → Add
 Integration**, search for **YAML Config Editor**, and add it. A
 "YAML Editor" entry will appear in your sidebar.
 
+## Releasing / updates
+
+HACS and Home Assistant discover new versions from this repository's
+[GitHub Releases](../../releases), matching each release's tag against
+`custom_components/yaml_editor/manifest.json`'s `version`. To cut a
+release:
+
+1. Bump `version` in `manifest.json` (and add an entry to
+   `CHANGELOG.md`).
+2. Tag the commit `vX.Y.Z` (matching the new manifest version exactly)
+   and push the tag: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+3. The `Release` GitHub Actions workflow verifies the tag matches the
+   manifest version and publishes a GitHub Release automatically.
+   HACS/Home Assistant will then offer it as an update.
+
+A separate `Validate` workflow runs `hassfest` and the HACS action on
+every push/PR to catch manifest or structure problems before a release.
+
 ## Usage notes
 
 - Renaming moves a file/folder within the same directory; to move a
