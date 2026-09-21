@@ -11,7 +11,9 @@ external tool required.
 ## Features
 
 - File tree browser for the whole `/config` directory (lazy-loaded,
-  with a filter box).
+  with a filter box). Shows only `.yaml`/`.yml` files by default -
+  folders are always shown for navigation - with a toggle to switch to
+  showing every file.
 - Open several files at once in tabs, each with its own undo history.
 - Plain `<textarea>` editing under the hood, so copy, paste, cut,
   select-all, and undo/redo all use your browser's/phone's native

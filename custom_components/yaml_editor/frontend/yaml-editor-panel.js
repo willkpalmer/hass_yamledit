@@ -198,6 +198,39 @@ const STYLE = `
   color: inherit;
   font-size: 13px;
 }
+.ye-toolbar-secondary { padding: 2px 8px 6px; }
+.ye-yaml-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px 0;
+  color: var(--primary-text-color, #212121);
+  font-size: 12px;
+}
+.ye-yaml-toggle-track {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--disabled-color, #bdbdbd);
+  position: relative;
+  transition: background 0.15s ease;
+}
+.ye-yaml-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+.ye-yaml-toggle.active .ye-yaml-toggle-track { background: var(--primary-color, #03a9f4); }
+.ye-yaml-toggle.active .ye-yaml-toggle-thumb { transform: translateX(14px); }
 .ye-tree {
   flex: 1 1 auto;
   overflow: auto;
@@ -498,6 +531,12 @@ const HTML = `
       <button class="ye-icon-btn" data-action="refresh" title="Refresh">&#8635;</button>
       <input class="ye-filter" type="text" placeholder="Filter files..." />
     </div>
+    <div class="ye-toolbar ye-toolbar-secondary">
+      <button class="ye-yaml-toggle" data-action="toggle-yaml-only" role="switch">
+        <span class="ye-yaml-toggle-track"><span class="ye-yaml-toggle-thumb"></span></span>
+        <span class="ye-yaml-toggle-label">YAML files only</span>
+      </button>
+    </div>
     <div class="ye-tree"></div>
   </div>
   <div class="ye-main">
@@ -544,10 +583,28 @@ class YamlEditorPanel extends HTMLElement {
     this._tabOrder = [];
     this._activePath = null;
     this._filterText = "";
+    this._yamlOnly = this._loadYamlOnlyPref();
 
     this._contextTarget = null;
 
     this._onWindowBeforeUnload = this._onWindowBeforeUnload.bind(this);
+  }
+
+  _loadYamlOnlyPref() {
+    try {
+      const stored = window.localStorage.getItem("yaml_editor.yaml_only");
+      return stored === null ? true : stored === "1";
+    } catch (err) {
+      return true;
+    }
+  }
+
+  _saveYamlOnlyPref() {
+    try {
+      window.localStorage.setItem("yaml_editor.yaml_only", this._yamlOnly ? "1" : "0");
+    } catch (err) {
+      /* private browsing / storage disabled - not persisted, not fatal */
+    }
   }
 
   set hass(hass) {
@@ -614,6 +671,7 @@ class YamlEditorPanel extends HTMLElement {
       scrim: this.shadowRoot.querySelector(".ye-scrim"),
       tree: this.shadowRoot.querySelector(".ye-tree"),
       filter: this.shadowRoot.querySelector(".ye-filter"),
+      yamlToggle: this.shadowRoot.querySelector(".ye-yaml-toggle"),
       tabs: this.shadowRoot.querySelector(".ye-tabs"),
       editorHost: this.shadowRoot.querySelector(".ye-editor-host"),
       statusPath: this.shadowRoot.querySelector(".ye-statusbar .path"),
@@ -648,7 +706,24 @@ class YamlEditorPanel extends HTMLElement {
     this.addEventListener("keydown", (e) => this._onKeyDown(e));
 
     this._applyNarrow();
+    this._updateYamlToggleUi();
     this._loadDir("");
+  }
+
+  _updateYamlToggleUi() {
+    const btn = this._els.yamlToggle;
+    btn.classList.toggle("active", this._yamlOnly);
+    btn.setAttribute("aria-checked", String(this._yamlOnly));
+    btn.title = this._yamlOnly
+      ? "Showing .yaml/.yml files only - click to show all files"
+      : "Showing all files - click to show only .yaml/.yml files";
+  }
+
+  _toggleYamlOnly() {
+    this._yamlOnly = !this._yamlOnly;
+    this._saveYamlOnlyPref();
+    this._updateYamlToggleUi();
+    this._renderTree();
   }
 
   _applyNarrow() {
@@ -693,6 +768,9 @@ class YamlEditorPanel extends HTMLElement {
         break;
       case "refresh":
         this._refreshAll();
+        break;
+      case "toggle-yaml-only":
+        this._toggleYamlOnly();
         break;
       case "save":
         this._saveActive();
@@ -766,10 +844,13 @@ class YamlEditorPanel extends HTMLElement {
       return this._loadingDirs.has(path) ? '<div class="ye-node-loading">Loading...</div>' : "";
     }
 
-    const filtering = !!this._filterText;
+    const textFiltering = !!this._filterText;
+    const filtering = textFiltering || this._yamlOnly;
     let out = "";
+    let hiddenCount = 0;
     for (const entry of entries) {
-      if (filtering && !entry.is_dir && !entry.name.toLowerCase().includes(this._filterText)) {
+      if (!entry.is_dir && this._isFileHidden(entry)) {
+        hiddenCount++;
         continue;
       }
       const expanded = this._expanded.has(entry.path);
@@ -782,7 +863,7 @@ class YamlEditorPanel extends HTMLElement {
       out += `<span class="ye-node-icon">${icon}</span>`;
       out += `<span class="ye-node-name">${escapeHtml(entry.name)}${dirty}</span>`;
       out += `</div>`;
-      if (entry.is_dir && (expanded || filtering)) {
+      if (entry.is_dir && (expanded || textFiltering)) {
         const childHtml = this._renderNode(entry.path, depth + 1);
         out += childHtml || (this._loadingDirs.has(entry.path) ? "" : `<div class="ye-node-empty" style="padding-left:${24 + depth * 16}px">empty</div>`);
         if (!this._treeCache.has(entry.path) && !this._loadingDirs.has(entry.path)) {
@@ -790,7 +871,19 @@ class YamlEditorPanel extends HTMLElement {
         }
       }
     }
+    if (!out && filtering && hiddenCount > 0) {
+      out = `<div class="ye-node-empty" style="padding-left:${24 + depth * 16}px">no matches</div>`;
+    }
     return out;
+  }
+
+  _isFileHidden(entry) {
+    if (this._yamlOnly) {
+      const ext = extOf(entry.name);
+      if (ext !== "yaml" && ext !== "yml") return true;
+    }
+    if (this._filterText && !entry.name.toLowerCase().includes(this._filterText)) return true;
+    return false;
   }
 
   _onTreeClick(e) {
