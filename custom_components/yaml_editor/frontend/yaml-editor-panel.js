@@ -356,6 +356,14 @@ const STYLE = `
   background: var(--card-background-color, #fff);
   pointer-events: none;
 }
+.ye-highlight code {
+  /* Browsers apply their own `code { font-family: monospace }` UA rule
+     directly to this element, which beats the font inherited from the
+     .ye-highlight <pre> regardless of selector specificity. Without
+     this, the highlight layer renders in a different monospace font
+     than the textarea, so characters drift out of alignment. */
+  font: inherit;
+}
 .ye-input {
   background: transparent;
   color: transparent;

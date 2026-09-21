@@ -6,6 +6,17 @@ versioning scheme (`YYYY.MM.MICRO`, e.g. `2026.9.0`) and match the
 `version` field in `custom_components/yaml_editor/manifest.json`.
 Releases before that (`0.1.0`-`0.3.0`) used Semantic Versioning.
 
+## 2026.9.1
+
+- Fixed a remaining cause of the edit/selection highlight and cursor
+  drifting out of alignment with the visible text (mainly on mobile):
+  the highlighter's `<code>` element inside the `<pre>` overlay picked
+  up the browser's built-in `code { font-family: monospace }` rule
+  directly, which overrides an inherited font regardless of
+  specificity, so it rendered in a different monospace font than the
+  textarea underneath. The overlay `<code>` now explicitly inherits
+  its font from its parent.
+
 ## 2026.9.0
 
 - Switched version numbering from Semantic Versioning to Home
