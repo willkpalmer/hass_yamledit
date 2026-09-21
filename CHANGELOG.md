@@ -6,6 +6,18 @@ versioning scheme (`YYYY.MM.MICRO`, e.g. `2026.9.0`) and match the
 `version` field in `custom_components/yaml_editor/manifest.json`.
 Releases before that (`0.1.0`-`0.3.0`) used Semantic Versioning.
 
+## 2026.9.4
+
+- The `2026.9.1` highlight/cursor alignment fix never actually reached
+  browsers: it edited the panel JS but didn't bump
+  `PANEL_JS_VERSION`, the cache-busting query param on the module URL
+  (`yaml-editor-panel.js?v=...`), and the static path is served with
+  `cache_headers=True`. Browsers that had already loaded the panel
+  kept serving the pre-fix file from cache indefinitely. Bumped the
+  version so the fix is actually delivered; if you still see
+  misalignment after updating, do a hard refresh (or clear the site's
+  cache) once to drop any already-cached copy.
+
 ## 2026.9.3
 
 - Renamed the integration's display name to "WP YAML Config Editor"

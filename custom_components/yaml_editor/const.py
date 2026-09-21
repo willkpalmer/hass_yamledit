@@ -12,7 +12,7 @@ PANEL_CUSTOM_ELEMENT = "yaml-editor-panel"
 
 # Bump this when the frontend JS changes so browsers don't serve a
 # stale cached copy of the panel module after an update.
-PANEL_JS_VERSION = "3"
+PANEL_JS_VERSION = "4"
 
 # Files larger than this are refused for editing in the browser.
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MiB
