@@ -7,6 +7,16 @@ Releases `2026.9.0`-`2026.9.4` briefly used Home Assistant's calendar
 versioning scheme (`YYYY.MM.MICRO`) instead; `0.3.1` reverts to
 Semantic Versioning, picking up where `0.3.0` left off.
 
+## 0.3.2
+
+- Fixed a broken sidebar panel: a stray backtick character inside a
+  CSS comment added in `0.3.1` (the highlight/cursor alignment fix)
+  terminated the panel module's JS template literal early, making the
+  whole script a syntax error. Browsers couldn't parse the module at
+  all, so the custom element never registered and the editor panel
+  rendered as a blank page. Bumped `PANEL_JS_VERSION` again so the fix
+  actually reaches browsers.
+
 ## 0.3.1
 
 - Reverted the `version` field back to Semantic Versioning after a
