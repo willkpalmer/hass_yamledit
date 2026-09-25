@@ -70,12 +70,12 @@ release:
 1. Bump `version` in `manifest.json` (and add an entry to
    `CHANGELOG.md`). Versions follow Semantic Versioning,
    `MAJOR.MINOR.PATCH` (e.g. `0.3.1`).
-2. Tag the commit `vMAJOR.MINOR.PATCH` (matching the new manifest
-   version exactly) and push the tag:
-   `git tag vMAJOR.MINOR.PATCH && git push origin vMAJOR.MINOR.PATCH`.
-3. The `Release` GitHub Actions workflow verifies the tag matches the
-   manifest version and publishes a GitHub Release automatically.
-   HACS/Home Assistant will then offer it as an update.
+2. Push to the default branch. The `Release` GitHub Actions workflow
+   reads the manifest version and, if there's no matching
+   `vMAJOR.MINOR.PATCH` release yet, tags the commit and publishes a
+   GitHub Release automatically, which HACS/Home Assistant will then offer
+   as an update. Pushes that don't change the version do nothing, and the
+   workflow can also be run by hand from the **Actions** tab.
 
 A separate `Validate` workflow runs `hassfest` and the HACS action on
 every push/PR to catch manifest or structure problems before a release.

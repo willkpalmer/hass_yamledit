@@ -1,41 +1,48 @@
+# Creates a GitHub Release whenever the default branch carries a manifest
+# version that hasn't been released yet. HACS offers updates based on
+# releases, so bumping "version" in manifest.json and pushing to the
+# default branch is all a release takes. Also runnable by hand from the
+# Actions tab (workflow_dispatch).
 name: Release
 
-# Publishing a GitHub Release is what lets HACS / Home Assistant see
-# and offer each version as an update. Cut a release by bumping
-# custom_components/yaml_editor/manifest.json's "version" (Semantic
-# Versioning: MAJOR.MINOR.PATCH) and pushing a matching
-# "vMAJOR.MINOR.PATCH" tag - this workflow does the rest.
-
-on:
-  push:
-    tags:
-      - "v*.*.*"
+on: [push, workflow_dispatch]
 
 permissions:
   contents: write
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
-    name: Create GitHub release
+    # Pushes to other branches and tags are skipped, so this keeps working
+    # if the default branch is ever renamed.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Verify manifest version matches tag
+      - name: Read manifest version
+        id: version
         run: |
-          set -euo pipefail
-          tag_version="${GITHUB_REF_NAME#v}"
-          manifest_version=$(jq -r .version custom_components/yaml_editor/manifest.json)
-          if [ "$tag_version" != "$manifest_version" ]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} does not match manifest.json version ${manifest_version}"
+          manifest=custom_components/yaml_editor/manifest.json
+          version=$(jq -r .version "$manifest")
+          if [ -z "$version" ] || [ "$version" = "null" ]; then
+            echo "::error::No version found in $manifest"
             exit 1
           fi
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
 
-      - name: Create release
+      - name: Create release if it doesn't exist yet
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          set -euo pipefail
-          gh release create "${GITHUB_REF_NAME}" \
-            --title "${GITHUB_REF_NAME}" \
-            --generate-notes
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists - nothing to do."
+          else
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG" --generate-notes
+          fi
